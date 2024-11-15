@@ -1,5 +1,8 @@
 import streamlit as st
-
+st.set_page_config(
+    page_title="Study Pal",
+    page_icon="🌱", #deleted markdown syntax
+)
 session_id_runn="runn_chat_history"
 session_id_wo_runn="wo_runn_chat_history"
 st.title("Study Pal🌱📚💪")
