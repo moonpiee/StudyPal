@@ -4,24 +4,81 @@ from langchain_groq import ChatGroq
 from langchain_core.prompts import ChatPromptTemplate,MessagesPlaceholder
 from langchain_core.runnables.history import RunnableWithMessageHistory
 from langchain_core.chat_history import BaseChatMessageHistory,InMemoryChatMessageHistory
+import json, toml
 
 
 session_id_runn="runn_chat_history12"
 session_id_wo_runn="wo_runn_chat_history12"
 st.title("Study Pal🌱📚💪")
-languages=["English","Telugu","Hindi","Malayalam","Marathi","Bengali","Kannada"]
+languages=["Select a Language","English","Telugu","Hindi","Malayalam","Marathi","Bengali","Kannada"]
 instructions_lis=["Tutor Me","Teacher Pal","Translate","Learn Language","Communicate","Surprise Me","Tell Me Why","Tongue Twister","Humor Me","Story Time", "More Fun Games","Inspire Me"]
 st.header(instructions_lis[11]+"🌟💪✨")
-instruction = instructions_lis[11]
-sel_language=st.selectbox(label="Your Language?",options=languages) #1st one by default
-sel_model="llama-3.1-70b-versatile" #default
-sel_temp=0#default
-with st.sidebar:
+cols= st.columns(4)
+with cols[3]:
     adv_opt=st.toggle("More Options")
     if adv_opt:
-     sel_model = st.selectbox("Select model", ("llama-3.1-70b-versatile","llama3-70b-8192", "llama3-8b-8192", "mixtral-8x7b-32768", "gemma2-9b-it", "gemma-7b-it", "llama-3.2-11b-text-preview"))
      sel_temp = st.slider("Temperature",0.0,1.0,0.0)
-    #  groq_api_key=st.text_input("Your Groq API Key")
+     st.session_state["sel_temp"]=sel_temp
+     st.session_state["groq_api_key"]=st.text_input("Your Groq API Key",type="password")
+with cols[2]:
+    top_opt=st.toggle("Stay on a topic?")
+    if top_opt:
+        topic=st.text_input("What topic is on your mind?")
+        st.session_state["topic"]=topic   
+instruction = instructions_lis[11]
+def get_default_models():
+    if 'models_data' not in st.secrets:
+        st.error("You need to set the default models in the secrets.")
+        st.stop()
+    config = toml.load('.streamlit/secrets.toml')
+    # Parse the JSON string
+    models_data = json.loads(config['models_data'])
+    select_map={}
+    # models_data=st.secrets["models_data"]
+    for model in models_data["data"]:
+         model_name=f"{model["id"]} (Owned by {model["owned_by"]})"
+         select_map[model_name]=model["id"]
+    return select_map
+if "sel_temp" not in st.session_state:
+    st.session_state["sel_temp"]=0
+if "groq_api_key" not in st.session_state:
+    if "GROQ_API_KEY" in st.secrets:
+        st.session_state["groq_api_key"]=st.secrets["GROQ_API_KEY"]
+default_llm="llama-3.1-70b-versatile"
+select_map=get_default_models()
+llms_map={'Select an LLM':None}
+llms_map.update(select_map)
+sel_language = st.selectbox(label="Your Language?",options=languages,index=languages.index(st.session_state["sel_language"]) if "sel_language" in st.session_state else 0)
+st.session_state["sel_language"]=sel_language
+# print(llms_map)
+if st.session_state["sel_language"] != "Your Language?":
+     sel_language=st.session_state["sel_language"]
+     if 'sel_model' not in st.session_state.keys():
+        sel_model = st.selectbox("Select a Model", llms_map.keys())
+        if sel_model and llms_map[sel_model] is not None:
+            if "sel_model" in st.session_state.keys():
+                st.session_state["sel_model"]=None
+            st.session_state["sel_model"]=llms_map[sel_model]  
+if "sel_model" in st.session_state.keys():
+     cur_llm=st.session_state["sel_model"]
+     st.caption(f"You are using {instruction} on {cur_llm}")
+     chat_groq=ChatGroq(
+     api_key=st.session_state["groq_api_key"],
+     model=cur_llm,
+     temperature=st.session_state["sel_temp"]
+     )
+else:
+     chat_groq=ChatGroq(
+     api_key=st.session_state["groq_api_key"],
+     model=default_llm,
+     temperature=st.session_state["sel_temp"]
+     )
+# print("clinet: ",chat_groq)
+
+sel_language=st.session_state["sel_language"]
+
+cur_llm=st.session_state["sel_model"] if "sel_model" in st.session_state else default_llm
+# print("chosen llm, language",cur_llm,sel_language)
 
 match instruction:
     case "Tutor Me":
@@ -47,7 +104,7 @@ match instruction:
     case "More Fun Games":
         instruction_desc=f"In {sel_language} provide fun games like puzzles, challenges, make a story with hints or make a story with a structure of happenings/characters something like forest - rabbit - stars make your own story kind of etc., to improve aptitude and cognitive abilities with fun"
     case "Inspire Me":
-        instruction_desc=f"Talk in {sel_language}. You inspire, motivate, enlighten me as a student through your words. One at a time. You can use quotes, inspirational stories etc., Be as short as possible. Ask no uestions"
+        instruction_desc=f"Talk in {sel_language}. You inspire, motivate, enlighten me as a student through your words. One at a time. You can use quotes, inspirational stories, successful stories etc., Ask no questions. Use markdown format."
     case _:
         instruction_desc=f"You are a helpful assistant for students in their academics in various subjects."
 
@@ -82,22 +139,22 @@ def chatbot(input_txt):
                 message = {"role":"assistant","content":response.content}
                 st.session_state[session_id_wo_runn].append(message)
         st.write("\n***\n")
+def answer(input_txt):
+    
+        with st.chat_message("assistant"):
+            with st.spinner("Thinking..."):
+                response = chain_with_history.invoke(
+                {"input":input_txt, "instruction_desc":instruction_desc,"sel_language":sel_language},
+                {"configurable": {"session_id": session_id_runn}}
+                )
+                st.markdown(response.content)
+        st.write("\n***\n")
+
 #to store in mmemory messagr with runnabels. other method is thru langgraph
 def get_session_id(session_id:str) -> BaseChatMessageHistory:
     if session_id not in st.session_state:
         st.session_state[session_id]=InMemoryChatMessageHistory()
     return st.session_state[session_id]
-#prepare groq chat api  model/client
-if st.secrets["GROQ_API_KEY"]!="":
-    groq_api_key=st.secrets["GROQ_API_KEY"]
-else:
-    groq_api_key=""
-# print("groq key:...",{groq_api_key})
-chat_groq=ChatGroq(
-    api_key=st.secrets["GROQ_API_KEY"],
-    model=sel_model,
-    temperature=sel_temp
-)
 
 #updated version of llmchain
 template = ChatPromptTemplate([
@@ -117,16 +174,29 @@ if session_id_runn not in st.session_state and session_id_wo_runn not in st.sess
     with st.spinner("Initializing the bot..."):
             # initial_msg=conversation.predict(input="",trnsl_chat_history=[])
             initial_msg=chain_with_history.invoke( #when you invoke, you store. automatically with runnab;les
-                {"input":"How can I utilise you? Briefly list out","instruction_desc":instruction_desc,"sel_language":sel_language}, #How can I utilise you? Briefly list out
+                {"input":"What can you do? Briefly list out in simple format","instruction_desc":instruction_desc,"sel_language":sel_language}, #How can I utilise you? Briefly list out
                 config={"configurable": {"session_id": session_id_runn}}
             )
             st.session_state[session_id_wo_runn]=[{"role":"assistant", "content":initial_msg.content}] #no need to add this in history
 
-input_txt=st.chat_input("Input text")
-if session_id_runn in st.session_state and session_id_wo_runn in st.session_state:
-    # print("showing prev chats...")
-    show_previous_chats(session_id_wo_runn)
-    if input_txt:
-        chatbot(input_txt)
+if "topic" in st.session_state:
+    input_txt=f"Keep on generating one randomly.No repitions. Stay on Topic: {st.session_state["topic"]}"
+else:
+    input_txt=f"Keep on generating one randomly.No repitions."
 
-
+# cols=st.tabs(3)
+tab1,tab2=st.tabs(["Inspire Me","Get Some More Inspo..."])
+with tab1:
+    # click = st.button("Inspire Me")
+    if session_id_runn in st.session_state and session_id_wo_runn in st.session_state:
+        # print("showing prev chats...")
+        # show_previous_chats(session_id_wo_runn)
+        answer(input_txt)
+with tab2:
+    # click = st.button("Get more...")
+    if session_id_runn in st.session_state and session_id_wo_runn in st.session_state:
+        # print("showing prev chats...")
+        show_previous_chats(session_id_wo_runn)
+        inp_txt=st.chat_input("Input text")
+        if inp_txt:
+            chatbot(inp_txt)

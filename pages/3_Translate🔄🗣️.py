@@ -4,24 +4,77 @@ from langchain_groq import ChatGroq
 from langchain_core.prompts import ChatPromptTemplate,MessagesPlaceholder
 from langchain_core.runnables.history import RunnableWithMessageHistory
 from langchain_core.chat_history import BaseChatMessageHistory,InMemoryChatMessageHistory
+import json, toml
 
 
 session_id_runn="runn_chat_history3"
 session_id_wo_runn="wo_runn_chat_history3"
 st.title("Study Pal🌱📚💪")
-languages=["English","Telugu","Hindi","Malayalam","Marathi","Bengali","Kannada"]
+languages=["Select a Language","English","Telugu","Hindi","Malayalam","Marathi","Bengali","Kannada"]
 instructions_lis=["Tutor Me","Teacher Pal","Translate","Learn Language","Communicate","Surprise Me","Tell Me Why","Tongue Twister","Humor Me","Story Time", "More Fun Games","Inspire Me"]
 st.header(instructions_lis[2]+"🔄🗣️")
-instruction = instructions_lis[2]
-sel_language=st.selectbox(label="Your Language?",options=languages) #1st one by default
-sel_model="llama-3.1-70b-versatile" #default
-sel_temp=0#default
-with st.sidebar:
+cols= st.columns(4)
+with cols[3]:
     adv_opt=st.toggle("More Options")
     if adv_opt:
-     sel_model = st.selectbox("Select model", ("llama-3.1-70b-versatile","llama3-70b-8192", "llama3-8b-8192", "mixtral-8x7b-32768", "gemma2-9b-it", "gemma-7b-it", "llama-3.2-11b-text-preview"))
      sel_temp = st.slider("Temperature",0.0,1.0,0.0)
-    #  groq_api_key=st.text_input("Your Groq API Key")
+     st.session_state["sel_temp"]=sel_temp
+     st.session_state["groq_api_key"]=st.text_input("Your Groq API Key",type="password")
+  
+instruction = instructions_lis[2]
+def get_default_models():
+    if 'models_data' not in st.secrets:
+        st.error("You need to set the default models in the secrets.")
+        st.stop()
+    config = toml.load('.streamlit/secrets.toml')
+    # Parse the JSON string
+    models_data = json.loads(config['models_data'])
+    select_map={}
+    # models_data=st.secrets["models_data"]
+    for model in models_data["data"]:
+         model_name=f"{model["id"]} (Owned by {model["owned_by"]})"
+         select_map[model_name]=model["id"]
+    return select_map
+if "sel_temp" not in st.session_state:
+    st.session_state["sel_temp"]=0
+if "groq_api_key" not in st.session_state:
+    if "GROQ_API_KEY" in st.secrets:
+        st.session_state["groq_api_key"]=st.secrets["GROQ_API_KEY"]
+default_llm="llama-3.1-70b-versatile"
+select_map=get_default_models()
+llms_map={'Select an LLM':None}
+llms_map.update(select_map)
+sel_language = st.selectbox(label="Your Language?",options=languages,index=languages.index(st.session_state["sel_language"]) if "sel_language" in st.session_state else 0)
+st.session_state["sel_language"]=sel_language
+# print(llms_map)
+if st.session_state["sel_language"] != "Your Language?":
+     sel_language=st.session_state["sel_language"]
+     if 'sel_model' not in st.session_state.keys():
+        sel_model = st.selectbox("Select a Model", llms_map.keys())
+        if sel_model and llms_map[sel_model] is not None:
+            if "sel_model" in st.session_state.keys():
+                st.session_state["sel_model"]=None
+            st.session_state["sel_model"]=llms_map[sel_model]  
+if "sel_model" in st.session_state.keys():
+     cur_llm=st.session_state["sel_model"]
+     st.caption(f"You are using {instruction} on {cur_llm}")
+     chat_groq=ChatGroq(
+     api_key=st.session_state["groq_api_key"],
+     model=cur_llm,
+     temperature=st.session_state["sel_temp"]
+     )
+else:
+     chat_groq=ChatGroq(
+     api_key=st.session_state["groq_api_key"],
+     model=default_llm,
+     temperature=st.session_state["sel_temp"]
+     )
+# print("clinet: ",chat_groq)
+
+sel_language=st.session_state["sel_language"]
+
+cur_llm=st.session_state["sel_model"] if "sel_model" in st.session_state else default_llm
+# print("chosen llm, language",cur_llm,sel_language)
 
 match instruction:
     case "Tutor Me":
@@ -29,7 +82,7 @@ match instruction:
     case "Teacher Pal":
           instruction_desc=f"Talk in {sel_language}. You are an excellent Teacher. My aim is to teach my students (learning should be fun) in the best way possible academically and professionally. You ask me my subject I want help with. Then ask what I want help with. Help me in teaching students effectively, creatively, interactively etc.,You also provide me useful short study materials, Short quiz Q&A, flowcharts in ascii for easy memorisation of topics if needed etc.,"
     case "Translate":
-          instruction_desc=f"Talk in {sel_language}.You are a translator. Ask me word/sentence and language i want to translate. You translate the user input to language I mention"
+          instruction_desc=f"Talk in {sel_language}.You are a translator. Ask me word/sentence and language i want to translate. You translate the user input to language I mention. Use markdown format"
     case "Learn Language":
           instruction_desc=f"You are an expert at language teaching. You ask me language I wish to learn and the language I know already. Teach me {sel_language} using the language I know"
     case "Communicate":
@@ -87,17 +140,6 @@ def get_session_id(session_id:str) -> BaseChatMessageHistory:
     if session_id not in st.session_state:
         st.session_state[session_id]=InMemoryChatMessageHistory()
     return st.session_state[session_id]
-#prepare groq chat api  model/client
-if st.secrets["GROQ_API_KEY"]!="":
-    groq_api_key=st.secrets["GROQ_API_KEY"]
-else:
-    groq_api_key=""
-# print("groq key:...",{groq_api_key})
-chat_groq=ChatGroq(
-    api_key=st.secrets["GROQ_API_KEY"],
-    model=sel_model,
-    temperature=sel_temp
-)
 
 #updated version of llmchain
 template = ChatPromptTemplate([
@@ -117,7 +159,7 @@ if session_id_runn not in st.session_state and session_id_wo_runn not in st.sess
     with st.spinner("Initializing the bot..."):
             # initial_msg=conversation.predict(input="",trnsl_chat_history=[])
             initial_msg=chain_with_history.invoke( #when you invoke, you store. automatically with runnab;les
-                {"input":"How can I utilise you? Briefly list out","instruction_desc":instruction_desc,"sel_language":sel_language}, #How can I utilise you? Briefly list out
+                {"input":"What can you do? Briefly list out in simple format","instruction_desc":instruction_desc,"sel_language":sel_language}, #How can I utilise you? Briefly list out
                 config={"configurable": {"session_id": session_id_runn}}
             )
             st.session_state[session_id_wo_runn]=[{"role":"assistant", "content":initial_msg.content}] #no need to add this in history
