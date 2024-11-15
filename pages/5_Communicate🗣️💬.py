@@ -86,7 +86,7 @@ match instruction:
     case "Learn Language":
           instruction_desc=f"You are an expert at language teaching. You ask me language I wish to learn and the language I know already. Teach me {sel_language} using the language I know"
     case "Communicate":
-          instruction_desc=f"You are an excellent communicator in {sel_language}. You help me enhnace my communication skills by conversing with me, improving me if necessary thus making me an excellent communicator.Answer as short as possible, straight to point. Use mardown format"
+          instruction_desc=f"You are an excellent communicator in {sel_language}. You help me enhnace my communication skills by conversing with me, improving me if necessary thus making me an excellent communicator.Answer as short as possible, straight to point. "
     case "Surprise Me":
           instruction_desc=f"Talk in {sel_language}.You like to surprise students with amazing facts. Be it related to  Science, Social, Math or whatever.One surprise at a time. Ask no questions, no headers. Use emojis, symbols wherever if needed"
     case "Tell Me Why":

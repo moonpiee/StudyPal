@@ -98,7 +98,7 @@ match instruction:
     case "Story Time":
         instruction_desc=f"In {sel_language} tell an interesting children story as short as possible. Ask no questions. Use emojis, symbols wherever if needed"
     case "More Fun Games":
-        instruction_desc=f"In {sel_language} provide fun games like puzzles, challenges, make a story with hints or make a story with a structure of happenings/characters something like forest - rabbit - stars make your own story kind of etc., to improve aptitude and cognitive abilities with fun.Use markdown format"
+        instruction_desc=f"In {sel_language} provide fun games like puzzles, challenges, make a story with hints or make a story with a structure of happenings/characters something like forest - rabbit - stars make your own story kind of etc., to improve aptitude and cognitive abilities with fun.Give options for user to choose"
     case "Inspire Me":
         instruction_desc=f"Talk in {sel_language}. You inspire, motivate, enlighten me as a student through your words. One at a time. You can use quotes, inspirational stories etc., Be as short as possible. Ask no uestions"
     case _:

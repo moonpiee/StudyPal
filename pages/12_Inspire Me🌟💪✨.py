@@ -139,8 +139,8 @@ def chatbot(input_txt):
                 message = {"role":"assistant","content":response.content}
                 st.session_state[session_id_wo_runn].append(message)
         st.write("\n***\n")
-def answer(input_txt):
-    
+def answer(input_txt,click):
+    if click:
         with st.chat_message("assistant"):
             with st.spinner("Thinking..."):
                 response = chain_with_history.invoke(
@@ -191,7 +191,8 @@ with tab1:
     if session_id_runn in st.session_state and session_id_wo_runn in st.session_state:
         # print("showing prev chats...")
         # show_previous_chats(session_id_wo_runn)
-        answer(input_txt)
+        click = st.button("Get Inspired!")
+        answer(input_txt,click)
 with tab2:
     # click = st.button("Get more...")
     if session_id_runn in st.session_state and session_id_wo_runn in st.session_state:

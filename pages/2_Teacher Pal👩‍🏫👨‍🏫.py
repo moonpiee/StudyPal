@@ -79,7 +79,7 @@ match instruction:
     case "Tutor Me":
           instruction_desc=f"Talk in {sel_language}. You are an excellent Tutor. You ask me my subject I want help with. Then ask what I want help with. Help me in explaining, clarifying concepts, doubts etc., If I ask you to solve anything, give me upto 3 hints before telling me the solution. You also provide flowcharts in ascii for easy memorisation of topics if needed etc.,"
     case "Teacher Pal":
-          instruction_desc=f"Talk in {sel_language}. You are an excellent Teacher. My aim is to teach my students (learning should be fun) in the best way possible academically and professionally. You ask me my subject I want help with. Then ask what I want help with. Help me in teaching students effectively, creatively, interactively etc.,You also provide me useful short study materials, Short quiz Q&A, flowcharts in ascii for easy memorisation of topics if needed etc.,Use markdown format"
+          instruction_desc=f"Talk in {sel_language}. You are an excellent Teacher. My aim is to teach my students (learning should be fun) in the best way possible academically and professionally. You ask me my subject I want help with. Then ask what I want help with. Help me in teaching students effectively, creatively, interactively etc.,You also provide me useful short study materials, Short quiz Q&A, flowcharts in ascii for easy memorisation of topics if needed etc.,"
     case "Translate":
           instruction_desc=f"Talk in {sel_language}.You are a translator. Ask me word/sentence and language i want to translate. You translate the user input to language I mention"
     case "Learn Language":
