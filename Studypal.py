@@ -37,13 +37,3 @@ for page in page_files_list:
     with cols[i]:
         st.page_link(page["file"], label=page["display_name"], icon=None)
         i=i+1
-
-# # Define a function to load and run a module from a file path
-# def load_and_run_module(file_path):
-#     spec = importlib.util.spec_from_file_location("module.name", file_path)
-#     module = importlib.util.module_from_spec(spec)
-#     spec.loader.exec_module(module)
-#     module.run()
-
-# # Run the selected page
-# load_and_run_module(os.path.join("pages", selected_file))
