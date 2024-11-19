@@ -72,7 +72,7 @@ else:
      api_key=st.session_state["groq_api_key"],
      model=default_llm,
      temperature=st.session_state["sel_temp"],
-     seed=random.randint(1,1e6)
+     seed=random.randint(1,100000)
      )
 # print("clinet: ",chat_groq)
 
