@@ -17,8 +17,12 @@ cols= st.columns(4)
 with cols[3]:
     adv_opt=st.toggle("More Options")
     if adv_opt:
-     sel_temp = st.slider("Temperature",0.0,1.0,0.0)
+     sel_temp = st.slider("Temperature",0.0,1.0,0.7)
      st.session_state["sel_temp"]=sel_temp
+     sel_top_p = st.slider("Top-p",0.0,1.0,0.95)
+     st.session_state["sel_top_p"]=sel_top_p
+     sel_top_k = st.slider("Top-k",1.0,500.0,50.0)
+     st.session_state["sel_top_k"]=sel_top_k
      st.session_state["groq_api_key"]=st.text_input("Your Groq API Key",type="password")
 with cols[2]:
     top_opt=st.toggle("Stay on a topic?")
@@ -41,6 +45,10 @@ def get_default_models():
     return select_map
 if "sel_temp" not in st.session_state:
     st.session_state["sel_temp"]=0
+if "sel_top_k" not in st.session_state:
+    st.session_state["sel_top_k"]=50.0
+if "sel_top_p" not in st.session_state:
+    st.session_state["sel_top_p"]=0.95
 if "groq_api_key" not in st.session_state:
     if "GROQ_API_KEY" in st.secrets:
         st.session_state["groq_api_key"]=st.secrets["GROQ_API_KEY"]
@@ -66,14 +74,18 @@ if "sel_model" in st.session_state.keys():
      api_key=st.session_state["groq_api_key"],
      model=cur_llm,
      temperature=st.session_state["sel_temp"],
-     seed=random.randint(1,100000)
+     top_p=st.session_state["sel_top_p"],
+     top_k=st.session_state["sel_top_k"]
+     # seed=random.randint(1,100000)
      )
 else:
      chat_groq=ChatGroq(
      api_key=st.session_state["groq_api_key"],
      model=default_llm,
      temperature=st.session_state["sel_temp"],
-     seed=random.randint(1,100000)
+     top_p=st.session_state["sel_top_p"],
+     top_k=st.session_state["sel_top_k"]
+     # seed=random.randint(1,100000)
      )
 # print("clinet: ",chat_groq)
 
