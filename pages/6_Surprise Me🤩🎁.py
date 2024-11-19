@@ -4,7 +4,7 @@ from langchain_groq import ChatGroq
 from langchain_core.prompts import ChatPromptTemplate,MessagesPlaceholder
 from langchain_core.runnables.history import RunnableWithMessageHistory
 from langchain_core.chat_history import BaseChatMessageHistory,InMemoryChatMessageHistory
-import json, toml
+import json, toml, random
 
 
 session_id_runn="runn_chat_history6"
@@ -72,6 +72,7 @@ else:
      api_key=st.session_state["groq_api_key"],
      model=default_llm,
      temperature=st.session_state["sel_temp"]
+     seed=random.randint(1,1e6)
      )
 # print("clinet: ",chat_groq)
 
