@@ -75,7 +75,7 @@ if "sel_model" in st.session_state.keys():
      model=cur_llm,
      temperature=st.session_state["sel_temp"],
      top_p=st.session_state["sel_top_p"],
-     top_k=st.session_state["sel_top_k"]
+     # top_k=st.session_state["sel_top_k"]
      # seed=random.randint(1,100000)
      )
 else:
@@ -84,7 +84,7 @@ else:
      model=default_llm,
      temperature=st.session_state["sel_temp"],
      top_p=st.session_state["sel_top_p"],
-     top_k=st.session_state["sel_top_k"]
+     # top_k=st.session_state["sel_top_k"]
      # seed=random.randint(1,100000)
      )
 # print("clinet: ",chat_groq)
