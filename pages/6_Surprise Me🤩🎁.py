@@ -65,7 +65,8 @@ if "sel_model" in st.session_state.keys():
      chat_groq=ChatGroq(
      api_key=st.session_state["groq_api_key"],
      model=cur_llm,
-     temperature=st.session_state["sel_temp"]
+     temperature=st.session_state["sel_temp"],
+     seed=random.randint(1,100000)
      )
 else:
      chat_groq=ChatGroq(
