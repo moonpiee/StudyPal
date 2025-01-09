@@ -33,14 +33,15 @@ def get_default_models():
     for model in models_data["data"]:
          model_name=f"{model["id"]} (Owned by {model["owned_by"]})"
          select_map[model_name]=model["id"]
-    return select_map
+    default_llm=models_data["data"][11]["id"] #can be customised
+    return select_map,default_llm
 if "sel_temp" not in st.session_state:
     st.session_state["sel_temp"]=0
 if "groq_api_key" not in st.session_state:
     if "GROQ_API_KEY" in st.secrets:
         st.session_state["groq_api_key"]=st.secrets["GROQ_API_KEY"]
-default_llm=models_data["data"][11]["id"] #can be customised
-select_map=get_default_models()
+# default_llm=models_data["data"][11]["id"] #can be customised
+select_map,default_llm=get_default_models()
 llms_map={'Select an LLM':None}
 llms_map.update(select_map)
 sel_language = st.selectbox(label="Your Language?",options=languages,index=languages.index(st.session_state["sel_language"]) if "sel_language" in st.session_state else 0)
