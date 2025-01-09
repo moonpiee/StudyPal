@@ -39,7 +39,7 @@ if "sel_temp" not in st.session_state:
 if "groq_api_key" not in st.session_state:
     if "GROQ_API_KEY" in st.secrets:
         st.session_state["groq_api_key"]=st.secrets["GROQ_API_KEY"]
-default_llm=st.secrets["models_data"][11]["id"] #can be customised
+default_llm=st.secrets["models_data"]["data"][11]["id"] #can be customised
 select_map=get_default_models()
 llms_map={'Select an LLM':None}
 llms_map.update(select_map)
