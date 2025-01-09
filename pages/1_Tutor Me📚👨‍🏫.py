@@ -42,7 +42,6 @@ if "groq_api_key" not in st.session_state:
         st.session_state["groq_api_key"]=st.secrets["GROQ_API_KEY"]
 # default_llm=models_data["data"][11]["id"] #can be customised
 select_map,default_llm=get_default_models()
-st.write(default_llm)
 llms_map={'Select an LLM':None}
 llms_map.update(select_map)
 sel_language = st.selectbox(label="Your Language?",options=languages,index=languages.index(st.session_state["sel_language"]) if "sel_language" in st.session_state else 0)
