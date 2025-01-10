@@ -46,11 +46,12 @@ llms_map={'Select an LLM':None}
 llms_map.update(select_map)
 sel_language = st.selectbox(label="Your Language?",options=languages,index=languages.index(st.session_state["sel_language"]) if "sel_language" in st.session_state else 0)
 st.session_state["sel_language"]=sel_language
+sel_model = st.selectbox("Select a Model", llms_map.keys())
 # print(llms_map)
 if st.session_state["sel_language"] != "Your Language?":
      sel_language=st.session_state["sel_language"]
      if 'sel_model' not in st.session_state.keys():
-        sel_model = st.selectbox("Select a Model", llms_map.keys())
+        # sel_model = st.selectbox("Select a Model", llms_map.keys())
         if sel_model and llms_map[sel_model] is not None:
             if "sel_model" in st.session_state.keys():
                 st.session_state["sel_model"]=None
