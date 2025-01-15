@@ -26,7 +26,8 @@ page_files_list = [
     {"file": "pages/12_Inspire Me🌟💪✨.py", "display_name": "Inspire Me 🌟💪✨"}
 ]
 
-
+api_key=st.text_input("Please Input Your Groq API Key", type="password")
+st.session_state["groq_api_key"]=api_key
 
 cols=st.columns(3)
 i=0
